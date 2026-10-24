@@ -29,7 +29,8 @@ module.exports = function createLearningRouter(WIKI, express) {
     });
   })().catch(error => { ready = undefined; throw error; }));
   const wrap = fn => (req, res, next) => Promise.resolve(fn(req, res)).catch(next);
-  const csrf = req => crypto.createHmac('sha256', WIKI.config.sessionSecret).update('aprende:' + req.user.id + ':' + (req.cookies?.jwt || req.get('authorization') || '')).digest('hex');
+  // Stable across Wiki.js JWT refreshes; disclosure still requires the signed-in same-origin session.
+  const csrf = req => crypto.createHmac('sha256', WIKI.config.sessionSecret).update('aprende:csrf:v1:' + req.user.id).digest('hex');
   const key = req => ({ userId: req.user.id, courseId: course.id });
   const parse = row => ({ completed: JSON.parse(row?.completed || '[]'), notes: JSON.parse(row?.notes || '{}'), updatedAt: row?.updatedAt || null });
   const progress = async (req, connection = db) => parse(await connection('aprendeProgress').where(key(req)).first());
