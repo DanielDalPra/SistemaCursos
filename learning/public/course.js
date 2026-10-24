@@ -1,4 +1,6 @@
 (() => {
+  const navigationStyle = document.createElement('link'); navigationStyle.rel='stylesheet'; navigationStyle.href='/cursos-assets/navigation.css'; document.head.append(navigationStyle);
+  const navigationScript = document.createElement('script'); navigationScript.src='/cursos-assets/navigation.js'; document.head.append(navigationScript);
   const courseId = location.pathname.split('/')[2] || 'do-plano-a-acao';
   const root = '/cursos/' + courseId + '/';
   const apiRoot = courseId === 'do-plano-a-acao' ? '/api/aprende/' : '/api/aprende/' + courseId + '/';
