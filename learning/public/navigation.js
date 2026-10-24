@@ -10,7 +10,7 @@
   const menu = document.createElement('details'); menu.className = 'global-menu';
   menu.innerHTML = `<summary>Menu do aluno<span aria-hidden="true">+</span></summary><div class="global-menu-content"><p class="nav-person" id="nav-person">Sua área de estudos</p><nav aria-label="Área do aluno"><a href="/cursos" data-nav="courses">Meus cursos</a><a href="/cursos" id="nav-continue" hidden>Continuar estudando</a><a href="/p">Minha conta</a><a href="/cursos/administracao" id="nav-admin" hidden>Gerenciar acessos</a><a href="/">Explorar cursos</a><a href="/logout" class="nav-exit">Sair da conta</a></nav><p class="nav-error" id="nav-error" role="status" hidden></p></div>`;
   sidebar.prepend(menu);
-  if (lesson) menu.classList.add('lesson-menu');
+  if (lesson) { menu.classList.add('lesson-menu'); const oldLinks=sidebar.querySelector('.sidebar-links');if(oldLinks)oldLinks.hidden=true; }
   const mobile = matchMedia('(max-width:760px)');
   const adapt = () => { menu.open = !mobile.matches; }; adapt(); mobile.addEventListener('change',adapt);
   menu.addEventListener('keydown',event => { if(event.key==='Escape' && mobile.matches){menu.open=false;menu.querySelector('summary').focus();} });
@@ -23,6 +23,7 @@
       const response=await fetch('/api/aprende/catalog',{credentials:'same-origin',signal:controller.signal});
       const data=await response.json();if(!response.ok)throw new Error(data.error || 'Não foi possível carregar sua área.');
       document.querySelector('#nav-person').textContent=data.user?.name || 'Sua área de estudos';
+      document.querySelector('#nav-error').hidden=true;
       document.querySelector('#nav-admin').hidden=!data.admin;
       const next=data.courses.filter(course=>course.enrolled && course.completed<course.total).sort((a,b)=>(b.updatedAt || '').localeCompare(a.updatedAt || ''))[0];
       const resume=document.querySelector('#nav-continue');resume.hidden=!next;if(next)resume.href=next.resumeUrl;
