@@ -80,7 +80,10 @@
       try {
         const saved = await saveNotes();
         message(saved ? 'Anotações salvas. Você pode continuar quando quiser.' : 'A versão enviada foi salva, mas você fez novas alterações. Salve novamente para guardar o texto mais recente.', saved ? 'success' : '');
-      } catch(error) { message(error.message,'error'); }
+      } catch(error) {
+        message(error.message,'error');
+        document.querySelector('#notes-state').textContent = (dirty ? 'Há alterações não salvas. ' : '') + error.message;
+      }
     });
   }
   addEventListener('beforeunload', event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } });
@@ -98,7 +101,11 @@
       renderProgress();
       const index = state.course.steps.findIndex(step=>step.id===stepId);
       location.href = root + state.course.steps[index+1].id;
-    } catch(error) { message(error.message,'error'); renderProgress(); }
+    } catch(error) {
+      message(error.message,'error'); renderProgress();
+      document.querySelector('#completion-note').textContent = error.message;
+      if (notesForm && dirty) document.querySelector('#notes-state').textContent = 'Há alterações não salvas. ' + error.message;
+    }
     finally {
       completing = false;
       fields.forEach(field => { field.readOnly = false; });

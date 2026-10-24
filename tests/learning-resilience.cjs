@@ -58,6 +58,7 @@ const createRouter=require('../learning/server.cjs');
   assert.match(await page.locator('#status').textContent(),/conectar|conexão/,'Offline failure must explain recovery in the interface language');
   assert.equal(await page.locator('#acao').inputValue(),'Rascunho preservado sem conexão');
   assert.match(await page.locator('#notes-state').textContent(),/não salvas/);
+  assert.match(await page.locator('#notes-state').textContent(),/conectar|conexão/,'Recovery instruction must also appear beside the save action');
   await page.screenshot({path:'.impeccable/resilience-review/offline-desktop.png',fullPage:true,animations:'disabled'});
   await page.unroute('**/api/aprende/notes');await page.getByRole('button',{name:'Salvar meu plano'}).click();await page.waitForFunction(()=>document.querySelector('#notes-state').textContent==='Anotações salvas na sua conta.');
   console.log('PASS: a connection failure preserves drafts, explains recovery and allows a successful retry.');
