@@ -15,7 +15,14 @@
   const escape = text => String(text).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   function message(text, type = '') { if (!status) return; status.hidden = !text; status.textContent = text; status.className = 'status-message ' + type; }
   async function api(url, body) {
-    const response = await fetch(apiRoot + url, { credentials:'same-origin', headers:{'Content-Type':'application/json',...(body ? {'X-Aprende-CSRF':state.csrf} : {})}, ...(body ? {method:'POST',body:JSON.stringify(body)} : {}) });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    let response;
+    try {
+      response = await fetch(apiRoot + url, { signal:controller.signal, credentials:'same-origin', headers:{'Content-Type':'application/json',...(body ? {'X-Aprende-CSRF':state.csrf} : {})}, ...(body ? {method:'POST',body:JSON.stringify(body)} : {}) });
+    } catch(error) {
+      throw new Error(controller.signal.aborted ? 'O servidor demorou para responder. Confira a conexão e tente novamente.' : 'Não foi possível conectar ao servidor. Confira a conexão e tente novamente.');
+    } finally { clearTimeout(timeout); }
     let data;
     try { data = await response.json(); } catch { throw new Error('Não foi possível ler a resposta. Recarregue a página e tente novamente.'); }
     if (!response.ok) { if (response.status === 401) document.querySelector('#session-login').hidden = false; throw new Error(data.error || 'Não foi possível salvar. Tente novamente.'); }

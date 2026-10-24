@@ -51,6 +51,16 @@ const createRouter=require('../learning/server.cjs');
   await page.screenshot({path:'.impeccable/resilience-review/long-note-print.png',fullPage:true,animations:'disabled'});
   await page.emulateMedia({media:'screen'});await printedNote.waitFor({state:'detached'});assert.equal(await page.getByText(longNote,{exact:true}).count(),0);
   console.log('PASS: long notes print in full and print-only text is removed when returning to the lesson.');
+  await page.unroute('**/api/aprende/notes');
+  await page.route('**/api/aprende/notes',route=>route.abort('failed'));
+  await page.locator('#acao').fill('Rascunho preservado sem conexão');await page.getByRole('button',{name:'Salvar meu plano'}).click();
+  await page.waitForFunction(()=>!document.querySelector('#notes-form button').disabled);
+  assert.match(await page.locator('#status').textContent(),/conectar|conexão/,'Offline failure must explain recovery in the interface language');
+  assert.equal(await page.locator('#acao').inputValue(),'Rascunho preservado sem conexão');
+  assert.match(await page.locator('#notes-state').textContent(),/não salvas/);
+  await page.screenshot({path:'.impeccable/resilience-review/offline-desktop.png',fullPage:true,animations:'disabled'});
+  await page.unroute('**/api/aprende/notes');await page.getByRole('button',{name:'Salvar meu plano'}).click();await page.waitForFunction(()=>document.querySelector('#notes-state').textContent==='Anotações salvas na sua conta.');
+  console.log('PASS: a connection failure preserves drafts, explains recovery and allows a successful retry.');
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));await db.destroy();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
 
