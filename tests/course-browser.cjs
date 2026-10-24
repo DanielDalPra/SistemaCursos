@@ -44,13 +44,13 @@ const createRouter = require('../learning/server.cjs');
     await admin.goto(base+'/cursos/administracao');await admin.waitForFunction(()=>!document.querySelector('#enroll-form button').disabled);
     await admin.getByLabel('E-mail da conta do aluno').fill('aluno@example.test');await admin.getByRole('button',{name:'Salvar alteração de acesso'}).click();await admin.getByText('Acesso liberado para Aluno de teste.').waitFor();await screenshot(admin,'administracao');
     await student.goto(base+root+'confianca');await student.waitForFunction(()=>!document.querySelector('#complete').disabled);await screenshot(student,'confianca');
-    assert.equal(await student.locator('iframe').count(),0);
+    await student.keyboard.press('Tab');assert.equal(await student.locator('.skip-link').evaluate(e=>e===document.activeElement),true);await student.keyboard.press('Enter');assert.match(student.url(),/#aula$/);assert.equal(await student.locator('iframe').count(),0);
     await student.route('https://www.youtube-nocookie.com/**',route=>route.fulfill({contentType:'text/html',body:'<p>External video fixture</p>'}));
     await student.getByRole('button',{name:'Carregar vídeo da aula'}).click();assert.match(await student.locator('iframe').getAttribute('src'),/0CpNy1Ph7e8\?start=303/);
     await student.locator('#complete').scrollIntoViewIfNeeded();await student.getByRole('button',{name:'Concluir e continuar'}).click();await student.waitForURL('**/material');await student.waitForFunction(()=>!document.querySelector('#complete').disabled);
     await student.locator('#identidade').fill('Explicar ideias com clareza');await student.locator('#acao').fill('Gravar um áudio de um minuto');await student.locator('#contexto').fill('Depois do café');await student.locator('#evidencia').fill('Revisar uma ideia e um exemplo');
     await student.getByRole('button',{name:'Salvar meu plano'}).click();await student.getByText('Anotações salvas. Você pode continuar quando quiser.').waitFor();await screenshot(student,'material');
-    await student.emulateMedia({media:'print'});assert.equal(await student.locator('.course-sidebar').isVisible(),false);await student.emulateMedia({media:'screen'});
+    await student.emulateMedia({media:'print'});assert.equal(await student.locator('.course-sidebar').isVisible(),false);await student.screenshot({path:path.join(output,'material-print.png'),fullPage:true,animations:'disabled'});await student.emulateMedia({media:'screen'});
     const otherDevice=await browser.newContext();await otherDevice.addCookies([{name:'fixture',value:'student',url:base}]);const resumed=await otherDevice.newPage();await resumed.goto(base+root+'material');await resumed.waitForFunction(()=>document.querySelector('#acao').value==='Gravar um áudio de um minuto');await otherDevice.close();
     await student.getByRole('button',{name:'Concluir e continuar'}).click();await student.waitForURL('**/clareza');await student.waitForFunction(()=>!document.querySelector('#complete').disabled);await screenshot(student,'clareza');
     await student.locator('#mensagem').fill('Minha ideia é simples e tem um exemplo.');
@@ -64,6 +64,7 @@ const createRouter = require('../learning/server.cjs');
     console.log('PASS: pending access, admin grant, two video lessons, study notes, device resume, print layout, quiz fail/retry/pass, persisted result, responsive screenshots, zero JS errors.');
   } finally {await browser.close();await new Promise(resolve=>server.close(resolve));await db.destroy();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
+
 
 
 
