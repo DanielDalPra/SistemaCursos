@@ -61,6 +61,19 @@ const createRouter=require('../learning/server.cjs');
   await page.screenshot({path:'.impeccable/resilience-review/offline-desktop.png',fullPage:true,animations:'disabled'});
   await page.unroute('**/api/aprende/notes');await page.getByRole('button',{name:'Salvar meu plano'}).click();await page.waitForFunction(()=>document.querySelector('#notes-state').textContent==='Anotações salvas na sua conta.');
   console.log('PASS: a connection failure preserves drafts, explains recovery and allows a successful retry.');
+  await db('aprendeProgress').where({userId:1,courseId:'do-plano-a-acao'}).update({completed:'["confianca","material","clareza"]'});
+  await page.goto(base+'/cursos/do-plano-a-acao/avaliacao');await page.locator('#quiz-form:visible').waitFor();
+  const questions=require('../learning/course.cjs').questions;
+  for(const question of questions)await page.locator(`input[name="${question.id}"][value="${question.answer}"]`).check();
+  await page.getByRole('button',{name:'Enviar respostas'}).click();await page.getByText('Você concluiu o minicurso.').waitFor();
+  await page.getByRole('button',{name:'Responder novamente'}).click();
+  for(const question of questions)await page.locator(`input[name="${question.id}"][value="${(question.answer+1)%4}"]`).check();
+  await page.getByRole('button',{name:'Enviar respostas'}).click();await page.getByText('0% de acerto',{exact:true}).waitFor();
+  assert.match(await page.locator('#quiz-result').textContent(),/aprovação anterior/,'A failed practice attempt must not imply that an earned completion was lost');
+  assert.equal(await page.locator('#progress-percent').textContent(),'100%');
+  await page.evaluate(()=>document.activeElement?.blur());await page.screenshot({path:'.impeccable/resilience-review/retained-approval-desktop.png',fullPage:true,animations:'disabled'});
+  await page.setViewportSize({width:390,height:844});await page.screenshot({path:'.impeccable/resilience-review/retained-approval-mobile.png',fullPage:true,animations:'disabled'});
+  console.log('PASS: an unsuccessful practice attempt clearly preserves the previously earned course completion.');
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));await db.destroy();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
 
