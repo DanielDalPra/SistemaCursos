@@ -10,6 +10,10 @@ const createRouter=require('../learning/server.cjs');
  await db.schema.createTable('users',t=>{t.integer('id').primary();t.string('name');t.boolean('isActive');t.boolean('isSystem');});
  await db('users').insert({id:1,name:'Revisão isolada',isActive:true,isSystem:false});
  const app=express();app.use(express.json(),(request,response,next)=>{request.user={id:1};next();});app.use('/cursos-home',express.static(path.resolve('home')));
+ app.use((request,response,next)=>{
+  if(request.get('x-fixture-hang-body')==='yes'){response.type('application/json');response.write('{');return;}
+  next();
+ });
  app.use(createRouter({models:{knex:db,users:{query:()=>({findById:id=>db('users').where({id}).first()})}},config:{sessionSecret:'isolated-resilience-test'},auth:{checkAccess:()=>true}},express));
  const server=app.listen(0,'127.0.0.1');await new Promise(resolve=>server.on('listening',resolve));const base='http://127.0.0.1:'+server.address().port;
  const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH||'C:/Users/danie/AppData/Local/ms-playwright/chromium-1208/chrome-win64/chrome.exe'});
@@ -60,8 +64,17 @@ const createRouter=require('../learning/server.cjs');
   assert.match(await page.locator('#notes-state').textContent(),/não salvas/);
   assert.match(await page.locator('#notes-state').textContent(),/conectar|conexão/,'Recovery instruction must also appear beside the save action');
   await page.screenshot({path:'.impeccable/resilience-review/offline-desktop.png',fullPage:true,animations:'disabled'});
+  await page.locator('#notes-form .save-row').scrollIntoViewIfNeeded();await page.screenshot({path:'.impeccable/resilience-review/offline-controls-desktop.png',animations:'disabled'});
+  await page.setViewportSize({width:390,height:844});await page.locator('#notes-form .save-row').scrollIntoViewIfNeeded();await page.screenshot({path:'.impeccable/resilience-review/offline-controls-mobile.png',animations:'disabled'});await page.setViewportSize({width:1440,height:1000});
   await page.unroute('**/api/aprende/notes');await page.getByRole('button',{name:'Salvar meu plano'}).click();await page.waitForFunction(()=>document.querySelector('#notes-state').textContent==='Anotações salvas na sua conta.');
   console.log('PASS: a connection failure preserves drafts, explains recovery and allows a successful retry.');
+  await page.route('**/api/aprende/notes',route=>route.continue({headers:{...route.request().headers(),'x-fixture-hang-body':'yes'}}));
+  await page.locator('#acao').fill('Rascunho preservado após resposta incompleta');await page.getByRole('button',{name:'Salvar meu plano'}).click();
+  await page.waitForFunction(()=>document.querySelector('#notes-state').textContent.includes('demorou para responder'),{},{timeout:22000});
+  assert.equal(await page.locator('#acao').inputValue(),'Rascunho preservado após resposta incompleta');
+  assert.equal(await page.getByRole('button',{name:'Salvar meu plano'}).isEnabled(),true);
+  await page.unroute('**/api/aprende/notes');await page.getByRole('button',{name:'Salvar meu plano'}).click();await page.waitForFunction(()=>document.querySelector('#notes-state').textContent==='Anotações salvas na sua conta.');
+  console.log('PASS: a stalled response body times out, preserves the draft and permits a retry.');
   await db('aprendeProgress').where({userId:1,courseId:'do-plano-a-acao'}).update({completed:'["confianca","material","clareza"]'});
   await page.goto(base+'/cursos/do-plano-a-acao/avaliacao');await page.locator('#quiz-form:visible').waitFor();
   const questions=require('../learning/course.cjs').questions;
