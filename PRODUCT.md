@@ -15,7 +15,7 @@ Alunos que procuram e acessam cursos da responsável pela plataforma. A respons�
 Plataforma de cursos que o desenvolvedor pretende vender para uma cliente. Pagamentos são combinados fora do sistema e o acesso é liberado manualmente. Automação futura.
 
 ## Current capabilities
-A home oferece três minicursos: Do plano à ação (desenvolvimento pessoal), Tempo para o que importa (produtividade) e Encontre sua voz (comunicação). Cada um tem dois vídeos incorporados, material original com aplicação prática e quiz de cinco questões. Login usa Wiki.js; matrícula manual, progresso, anotações e notas são separados por usuário e curso. A área do aluno permite escolher entre cursos liberados, e a administração seleciona qual curso gerenciar. Os vídeos seguem como prévias externas com créditos.
+A home oferece três minicursos: Do plano à ação (desenvolvimento pessoal), Tempo para o que importa (produtividade) e Encontre sua voz (comunicação). Cada um tem dois vídeos incorporados, material original com aplicação prática e quiz de cinco questões. Login usa Wiki.js; matrícula manual, progresso, anotações e notas são separados por usuário e curso. A área do aluno mostra estados e progresso, filtra cursos e permite retomar os estudos. A navegação compartilhada oferece conta, saída, catálogo e administração conforme o perfil. A administração seleciona o curso, busca contas ativas, revisa liberações ou revogações e filtra acessos; revogar preserva o histórico. Os vídeos seguem como prévias externas com créditos.
 
 ## Confirmed scope
 O usuário autorizou redesenhar livremente a home, mantendo Aprende e os cursos de exemplo para comparar a versão anterior com uma versão orientada pelas skills de design solicitadas. Manter uma cópia da anterior.
