@@ -41,6 +41,8 @@ test('only admin can enroll; ungranted student cannot read quiz or write progres
 test('CSRF and cross-origin requests are rejected', async () => {
   assert.equal((await request('/api/aprende/enrollments', { method:'POST', token:'invalid', body:{email:'aluno@example.test',action:'grant'} })).status,403);
   assert.equal((await request('/api/aprende/enrollments', { method:'POST', origin:'https://evil.example', body:{email:'aluno@example.test',action:'grant'} })).status,403);
+  assert.equal((await request('/api/aprende/enrollments', { method:'POST', origin:'not-a-url', body:{email:'aluno@example.test',action:'grant'} })).status,403);
+  assert.equal((await request('/api/aprende/enrollments', { method:'POST', token:'é'.repeat(64), body:{email:'aluno@example.test',action:'grant'} })).status,403);
 });
 test('manual grant succeeds and user cannot forge another student identity', async () => {
   assert.equal((await request('/api/aprende/enrollments', { method:'POST', body:{email:'aluno@example.test',action:'grant'} })).status,200);
@@ -64,6 +66,8 @@ test('notes are validated and stay isolated per authenticated user', async () =>
   assert.equal((await request('/api/aprende/notes',{user:3,token:student.csrf,method:'POST',body:{notes:{acao:'a'.repeat(2001)}}})).status,400);
   assert.equal((await (await request('/api/aprende/state',{user:3})).json()).progress.notes.acao,'Ler duas páginas');
   assert.deepEqual((await (await request('/api/aprende/state')).json()).progress.notes,{});
+  const resume = await request('/cursos',{user:3});
+  assert.equal(resume.headers.get('location'),'/cursos/do-plano-a-acao/material');
 });
 test('server grades attempts, rejects incomplete answers and persists pass', async () => {
   const student = await (await request('/api/aprende/state', { user:3 })).json();
@@ -76,6 +80,12 @@ test('server grades attempts, rejects incomplete answers and persists pass', asy
   const passed = await (await request('/api/aprende/quiz',{user:3,token:student.csrf,method:'POST',body:{answers:Object.fromEntries(course.questions.map(q=>[q.id,q.answer]))}})).json();
   assert.equal(passed.score,100); assert.equal(passed.passed,true); assert.equal(passed.progress.completed.length,4);
   assert.equal((await db('aprendeAttempts').where({userId:3})).length,2);
+  assert.equal((await request('/cursos',{user:3})).headers.get('location'),'/cursos/do-plano-a-acao/avaliacao');
+});
+test('quiz submission limit is enforced for the authenticated student', async () => {
+  const student=await (await request('/api/aprende/state',{user:3})).json();
+  await db('aprendeAttempts').insert(Array.from({length:18},()=>({userId:3,courseId:course.id,revision:1,score:0,passed:false,answers:'{}',createdAt:new Date().toISOString()})));
+  assert.equal((await request('/api/aprende/quiz',{user:3,token:student.csrf,method:'POST',body:{answers:Object.fromEntries(course.questions.map(q=>[q.id,q.answer]))}})).status,429);
 });
 test('revoking blocks later requests and inactive accounts are denied', async () => {
   await request('/api/aprende/enrollments',{method:'POST',body:{email:'aluno@example.test',action:'revoke'}});

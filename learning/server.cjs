@@ -56,9 +56,11 @@ module.exports = function createLearningRouter(WIKI, express) {
     if (req.method === 'GET') return next();
     const token = req.get('x-aprende-csrf') || '';
     const expected = csrf(req);
-    if (token.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(token), Buffer.from(expected))) return res.status(403).json({ error: 'Sessão desatualizada. Recarregue a página e tente novamente.' });
+    if (!/^[a-f0-9]{64}$/.test(token) || !crypto.timingSafeEqual(Buffer.from(token), Buffer.from(expected))) return res.status(403).json({ error: 'Sessão desatualizada. Recarregue a página e tente novamente.' });
     const origin = req.get('origin');
-    if (req.get('sec-fetch-site') === 'cross-site' || (origin && new URL(origin).host !== req.get('host'))) return res.status(403).json({ error: 'Origem da solicitação não permitida.' });
+    let sameOrigin = !origin;
+    try { if (origin) sameOrigin = new URL(origin).host === req.get('host'); } catch { sameOrigin = false; }
+    if (req.get('sec-fetch-site') === 'cross-site' || !sameOrigin) return res.status(403).json({ error: 'Origem da solicitação não permitida.' });
     if (!req.is('application/json')) return res.status(415).json({ error: 'Envie os dados em JSON.' });
     next();
   });
@@ -110,6 +112,8 @@ module.exports = function createLearningRouter(WIKI, express) {
   }));
   router.post('/api/aprende/quiz', wrap(async (req, res) => {
     if (!await requireAccess(req, res)) return;
+    const recent = await db('aprendeAttempts').where(key(req)).andWhere('createdAt', '>', new Date(Date.now() - 3600000).toISOString()).count({ count: '*' }).first();
+    if (Number(recent.count) >= 20) return res.status(429).json({ error: 'Você enviou muitas tentativas em pouco tempo. Revise o material e tente novamente em uma hora.' });
     const answers = req.body.answers;
     if (!answers || Array.isArray(answers) || typeof answers !== 'object' || Object.keys(answers).length !== course.questions.length || course.questions.some(q => !Number.isInteger(answers[q.id]) || answers[q.id] < 0 || answers[q.id] >= q.options.length)) return res.status(400).json({ error: 'Responda todas as perguntas antes de enviar.' });
     const state = await progress(req);
@@ -136,7 +140,11 @@ module.exports = function createLearningRouter(WIKI, express) {
     else if (!await db('aprendeEnrollments').where(enrollment).first()) await db('aprendeEnrollments').insert({ ...enrollment, grantedAt: new Date().toISOString(), grantedBy: req.user.id });
     res.json({ ok: true, name: users[0].name, action: req.body.action });
   }));
-  router.get(['/cursos', root], (req, res) => res.redirect(root + '/confianca'));
+  router.get(['/cursos', root], wrap(async (req, res) => {
+    const state = await hasAccess(req) ? await progress(req) : { completed: [] };
+    const next = course.steps.find(step => !state.completed.includes(step.id)) || course.steps[course.steps.length - 1];
+    res.redirect(root + '/' + next.id);
+  }));
   router.get('/cursos/administracao', (req, res) => {
     if (!isAdmin(req)) return res.status(403).send('Acesso restrito à administração.');
     res.sendFile(path.join(__dirname, 'pages', 'administracao.html'));
