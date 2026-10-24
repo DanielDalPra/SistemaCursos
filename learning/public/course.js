@@ -1,5 +1,7 @@
 (() => {
-  const root = '/cursos/do-plano-a-acao/';
+  const courseId = location.pathname.split('/')[2] || 'do-plano-a-acao';
+  const root = '/cursos/' + courseId + '/';
+  const apiRoot = courseId === 'do-plano-a-acao' ? '/api/aprende/' : '/api/aprende/' + courseId + '/';
   const stepId = document.body.dataset.step;
   let state;
   let dirty = false;
@@ -9,7 +11,7 @@
   const escape = text => String(text).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   function message(text, type = '') { if (!status) return; status.hidden = !text; status.textContent = text; status.className = 'status-message ' + type; }
   async function api(url, body) {
-    const response = await fetch('/api/aprende/' + url, { credentials:'same-origin', headers:{'Content-Type':'application/json',...(body ? {'X-Aprende-CSRF':state.csrf} : {})}, ...(body ? {method:'POST',body:JSON.stringify(body)} : {}) });
+    const response = await fetch(apiRoot + url, { credentials:'same-origin', headers:{'Content-Type':'application/json',...(body ? {'X-Aprende-CSRF':state.csrf} : {})}, ...(body ? {method:'POST',body:JSON.stringify(body)} : {}) });
     let data;
     try { data = await response.json(); } catch { throw new Error('Não foi possível ler a resposta. Recarregue a página e tente novamente.'); }
     if (!response.ok) { if (response.status === 401) document.querySelector('#session-login').hidden = false; throw new Error(data.error || 'Não foi possível salvar. Tente novamente.'); }
@@ -23,6 +25,7 @@
     document.querySelector('#progress-bar').value = percentage;
     document.querySelector('#student-name').textContent = state.user.name;
     document.querySelector('#admin-link').hidden = !state.admin;
+    document.querySelector('#admin-link').href = '/cursos/administracao?curso=' + encodeURIComponent(courseId);
     document.querySelectorAll('[data-lesson]').forEach(link => {
       const done = completed.includes(link.dataset.lesson);
       link.classList.toggle('is-complete',done);
