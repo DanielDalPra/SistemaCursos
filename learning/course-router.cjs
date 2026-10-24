@@ -3,7 +3,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const schemaPromises = new WeakMap();
 
-module.exports = function createCourseRouter(WIKI, express, course = require('./course.cjs')) {
+module.exports = function createCourseRouter(WIKI, express, course = require('./course.cjs'), catalog = [course]) {
   const router = express.Router();
   const db = WIKI.models.knex;
   const root = '/cursos/' + course.id;
@@ -72,6 +72,13 @@ module.exports = function createCourseRouter(WIKI, express, course = require('./
     next();
   });
   const hasAccess = async req => isAdmin(req) || !!await db('aprendeEnrollments').where(key(req)).first();
+  const studentCourses = async req => Promise.all(catalog.map(async item => {
+    const scope = { userId: req.user.id, courseId: item.id };
+    const enrolled = isAdmin(req) || !!await db('aprendeEnrollments').where(scope).first();
+    const state = enrolled ? parse(await db('aprendeProgress').where(scope).first()) : { completed: [] };
+    return { id: item.id, title: item.title, enrolled, completed: state.completed.length, total: item.steps.length };
+  }));
+  if (course.id === 'do-plano-a-acao') router.get('/api/aprende/catalog', wrap(async (req, res) => res.json({ courses: await studentCourses(req), admin: isAdmin(req) })));
   const requireAccess = async (req, res) => {
     if (await hasAccess(req)) return true;
     res.status(403).json({ error: 'Seu acesso ainda não foi liberado. Fale com a responsável pelo curso.', code: 'ENROLLMENT_REQUIRED' }); return false;
@@ -148,6 +155,11 @@ module.exports = function createCourseRouter(WIKI, express, course = require('./
     res.json({ ok: true, name: users[0].name, action: req.body.action });
   }));
   router.get(course.id === 'do-plano-a-acao' ? ['/cursos', root] : [root], wrap(async (req, res) => {
+    if (req.path === '/cursos' && catalog.length > 1) {
+      const enrolled = (await studentCourses(req)).filter(item => item.enrolled);
+      if (enrolled.length === 1) return res.redirect('/cursos/' + enrolled[0].id);
+      return res.sendFile(path.join(__dirname, 'pages', 'meus-cursos.html'));
+    }
     const state = await hasAccess(req) ? await progress(req) : { completed: [] };
     const next = course.steps.find(step => !state.completed.includes(step.id)) || course.steps[course.steps.length - 1];
     res.redirect(root + '/' + next.id);
