@@ -157,7 +157,12 @@ module.exports = function createCourseRouter(WIKI, express, course = require('./
   router.get(course.id === 'do-plano-a-acao' ? ['/cursos', root] : [root], wrap(async (req, res) => {
     if (req.path === '/cursos' && catalog.length > 1) {
       const enrolled = (await studentCourses(req)).filter(item => item.enrolled);
-      if (enrolled.length === 1) return res.redirect('/cursos/' + enrolled[0].id);
+      if (enrolled.length === 1) {
+        const item = catalog.find(item => item.id === enrolled[0].id);
+        const state = parse(await db('aprendeProgress').where({ userId: req.user.id, courseId: item.id }).first());
+        const next = item.steps.find(step => !state.completed.includes(step.id)) || item.steps[item.steps.length - 1];
+        return res.redirect('/cursos/' + item.id + '/' + next.id);
+      }
       return res.sendFile(path.join(__dirname, 'pages', 'meus-cursos.html'));
     }
     const state = await hasAccess(req) ? await progress(req) : { completed: [] };
