@@ -68,6 +68,27 @@
       "description": "Native course details with a rotating plus and pale expanded field.",
       "kind": "custom",
       "refersTo": "course-summary"
+    },
+    {
+      "description": "Saved completion, current lesson and native progress on the stone sidebar.",
+      "css": ".ds-course-outline{background:var(--ground,#dfdedb);color:var(--ink,#26251e);padding:24px;font-family:Epilogue,Arial,sans-serif}.ds-progress-meta{display:flex;justify-content:space-between;font-size:13px;margin-bottom:10px}.ds-course-outline progress{width:100%;height:5px;display:block;appearance:none;border:0;background:var(--lesson-line,#d1d0c8);margin-bottom:28px}.ds-course-outline progress::-webkit-progress-bar{background:var(--lesson-line,#d1d0c8)}.ds-course-outline progress::-webkit-progress-value{background:var(--accent,#2456d6)}.ds-course-outline progress::-moz-progress-bar{background:var(--accent,#2456d6)}.ds-course-step{display:flex;gap:13px;padding:14px 12px;align-items:start;font-size:14px;line-height:1.55;min-height:65px;text-decoration:none;color:inherit;margin-top:8px}.ds-course-step[aria-current=page],.ds-course-step:hover{background:var(--lesson-paper,#f4f3f0)}.ds-marker{width:17px;height:17px;border:1px solid #77766e;margin-top:3px;flex-shrink:0;display:grid;place-items:center;font-size:12px}.ds-complete .ds-marker{background:var(--accent,#2456d6);border-color:var(--accent,#2456d6);color:white}.ds-course-step small{display:block;font-size:12px;margin-top:3px;color:#5a5951}.ds-course-step:focus-visible{outline:3px solid currentColor;outline-offset:6px}",
+      "html": "<nav class=\"ds-course-outline\" aria-label=\"Etapas do minicurso\"><div class=\"ds-progress-meta\"><span>1 de 4 etapas</span><span>25%</span></div><progress max=\"100\" value=\"25\" aria-label=\"Progresso do curso\"></progress><a class=\"ds-course-step ds-complete\" href=\"#confianca\"><span class=\"ds-marker\" aria-hidden=\"true\">✓</span><span>Começar antes de se sentir pronto<small>Vídeo · Concluída</small></span></a><a class=\"ds-course-step\" aria-current=\"page\" href=\"#material\"><span class=\"ds-marker\" aria-hidden=\"true\"></span><span>Identidade que vira prática<small>Material de estudo · Você está aqui</small></span></a></nav>",
+      "kind": "nav",
+      "name": "Course Outline and Progress"
+    },
+    {
+      "description": "Labelled account notes field with a square border and room to write.",
+      "css": ".ds-notes{font-family:Epilogue,Arial,sans-serif;color:var(--ink,#26251e);max-width:760px}.ds-notes label{display:block;font-size:15px;font-weight:500;margin:22px 0 9px}.ds-notes small{display:block;font-size:13px;font-weight:400;margin-top:4px}.ds-notes textarea{width:100%;display:block;border:1px solid #aaa99f;padding:14px 15px;background:#fffefa;border-radius:0;font-family:inherit;font-size:16px;line-height:1.6;caret-color:var(--accent,#2456d6);resize:vertical;min-height:95px;color:inherit}.ds-notes textarea::placeholder{color:#636259;opacity:1}.ds-notes textarea:focus-visible{outline:3px solid currentColor;outline-offset:6px}.ds-notes p{font-size:13px;margin-top:24px}",
+      "html": "<div class=\"ds-notes\"><label for=\"ds-course-note\">Qual é a menor ação que vou realizar?<small>Descreva um comportamento, não uma qualidade abstrata.</small></label><textarea id=\"ds-course-note\" maxlength=\"2000\" placeholder=\"Vou gravar um áudio de um minuto explicando uma ideia.\"></textarea><p>Há alterações não salvas.</p></div>",
+      "kind": "input",
+      "name": "Course Notes Field"
+    },
+    {
+      "description": "Native required radio choices with checked and keyboard-focus treatments.",
+      "css": ".ds-quiz{font-family:Epilogue,Arial,sans-serif;border:0;padding:0;margin:0 0 35px;min-width:0;color:var(--ink,#26251e)}.ds-quiz legend{font-size:18px;font-weight:500;margin-bottom:15px;line-height:1.55}.ds-quiz-option{display:flex;gap:13px;align-items:start;background:var(--lesson-panel,#e9e8e3);padding:15px 18px;margin-bottom:9px;cursor:pointer;font-size:15px;line-height:1.6}.ds-quiz-option input{width:18px;height:18px;margin:3px 0 0;flex-shrink:0;accent-color:var(--accent,#2456d6)}.ds-quiz-option:hover{background:#dddcd5}.ds-quiz-option:has(input:checked){background:#dbe3f7}.ds-quiz-option:has(input:focus-visible){outline:2px solid var(--accent,#2456d6);outline-offset:2px}",
+      "html": "<fieldset class=\"ds-quiz\"><legend>Qual ação ajuda a transformar intenção em prática?</legend><label class=\"ds-quiz-option\"><input type=\"radio\" name=\"ds-practice\" value=\"0\" required><span>Escolher uma tentativa pequena e observar o resultado.</span></label><label class=\"ds-quiz-option\"><input type=\"radio\" name=\"ds-practice\" value=\"1\" required><span>Esperar até se sentir completamente pronto.</span></label></fieldset>",
+      "kind": "custom",
+      "name": "Course Quiz Choices"
     }
   ],
   "extensions": {
@@ -208,6 +229,10 @@
       {
         "value": "760px",
         "name": "mobile-max"
+      },
+      {
+        "name": "course-intermediate-max",
+        "value": "1050px"
       }
     ],
     "typographyMeta": {
@@ -275,6 +300,6 @@
     ],
     "rampNote": "Synthesized eight-step OKLCH previews, not shipping colour tokens. Canonical source values are hex in DESIGN.md."
   },
-  "generatedAt": "2026-10-24T18:01:38.6737471Z",
+  "generatedAt": "2026-10-24T18:52:46.5774399Z",
   "schemaVersion": 2
 }
