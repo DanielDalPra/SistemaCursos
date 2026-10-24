@@ -95,7 +95,22 @@
       if (notesForm) notesForm.querySelector('[type=submit]').disabled = false;
     }
   });
-  document.querySelector('#print-material')?.addEventListener('click', () => window.print());
+  function clearPrintableNotes() {
+    notesForm?.querySelectorAll('.print-note').forEach(element => element.remove());
+  }
+  function preparePrintableNotes() {
+    clearPrintableNotes();
+    notesForm?.querySelectorAll('input, textarea').forEach(field => {
+      const paragraph = document.createElement('p');
+      paragraph.className = 'print-note';
+      paragraph.textContent = field.value || 'Não preenchido.';
+      field.insertAdjacentElement('afterend', paragraph);
+    });
+  }
+  addEventListener('beforeprint', preparePrintableNotes);
+  addEventListener('afterprint', clearPrintableNotes);
+  matchMedia('print').addEventListener('change', event => event.matches ? preparePrintableNotes() : clearPrintableNotes());
+  document.querySelector('#print-material')?.addEventListener('click', () => { preparePrintableNotes(); window.print(); });
   document.querySelector('#load-video')?.addEventListener('click', () => {
     const container = document.querySelector('#video');
     const iframe = document.createElement('iframe');

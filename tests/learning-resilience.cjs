@@ -40,5 +40,18 @@ const createRouter=require('../learning/server.cjs');
   assert.equal(await page.locator('#acao').evaluate(field=>field.readOnly),true);releaseNext();await page.waitForURL('**/clareza');
   assert.equal(JSON.parse((await db('aprendeProgress').where({userId:1,courseId:'do-plano-a-acao'}).first()).notes).acao,'Texto final antes de avançar');
   console.log('PASS: completing while a save is pending persists the newest edits before navigation.');
+  await page.goto(base+'/cursos/do-plano-a-acao/material');await page.locator('#loading').waitFor({state:'hidden'});
+  const longNote='Uma anotação extensa para conferir a impressão. '.repeat(34)+'FINAL DA ANOTAÇÃO';
+  await page.locator('#acao').fill(longNote);await page.getByRole('button',{name:'Salvar meu plano'}).click();await page.waitForFunction(()=>document.querySelector('#notes-state').textContent==='Anotações salvas na sua conta.');
+  await page.emulateMedia({media:'print'});
+  const printedNote=page.getByText(longNote,{exact:true});await printedNote.waitFor({state:'visible'});
+  assert.equal(await printedNote.isVisible(),true,'The complete saved note must appear as printable text, including its last line');
+  assert.equal(await printedNote.evaluate(element=>element.scrollHeight<=element.clientHeight),true,'Printed note must not be clipped to a textarea viewport');
+  require('node:fs').mkdirSync('.impeccable/resilience-review',{recursive:true});
+  await page.screenshot({path:'.impeccable/resilience-review/long-note-print.png',fullPage:true,animations:'disabled'});
+  await page.emulateMedia({media:'screen'});await printedNote.waitFor({state:'detached'});assert.equal(await page.getByText(longNote,{exact:true}).count(),0);
+  console.log('PASS: long notes print in full and print-only text is removed when returning to the lesson.');
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));await db.destroy();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
+
+

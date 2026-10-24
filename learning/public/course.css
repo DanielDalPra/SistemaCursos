@@ -3,3 +3,5 @@
 
 .lesson-body .skip-link{top:10px;clip-path:inset(50%);width:1px;height:1px;overflow:hidden;padding:0;white-space:nowrap}.lesson-body .skip-link:focus{clip-path:none;width:auto;height:auto;padding:16px;white-space:normal}
 
+.print-note{display:none}
+@media print{.notes-form input,.notes-form textarea{display:none!important}.notes-form .print-note{display:block;white-space:pre-wrap;overflow-wrap:anywhere;font-size:11pt;line-height:1.6;max-width:none;min-height:35px;border:1px solid #888;padding:12px;margin:0 0 20px;break-inside:auto}}
