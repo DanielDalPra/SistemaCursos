@@ -105,3 +105,11 @@ Tempo para o que importa: `/cursos/rotina-possivel`. Vídeos selecionados de Lua
 Carolina e Thais Godinho, plano semanal salvo/imprimível, revisão e quiz próprio.
 Administração permite escolher o curso; acessos, anotações e notas são independentes.
 O primeiro minicurso foi preservado e validado novamente por regressão.
+
+## Terceiro minicurso
+
+Encontre sua voz: `/cursos/comunicacao-clara`. Duas aulas selecionadas de Mara
+Behlau (TEDx Talks) e Clube da Fala, roteiro de conversa salvo/imprimível, revisão
+e quiz. A home e a administração já incluem os três cursos; os dados continuam
+isolados por conta e matrícula. Onze testes da API e os três fluxos no navegador
+foram aprovados. Consulte `learning/README.md` para fontes e limites da prévia.

@@ -67,6 +67,7 @@ emissão de certificado profissional.
 node --test tests/course-api.test.cjs
 node tests/course-browser.cjs
 node tests/productivity-browser.cjs
+node tests/communication-browser.cjs
 ```
 
 Os testes usam usuários fictícios e SQLite em memória. Não leem nem alteram
@@ -108,3 +109,33 @@ compartilhada entre os roteadores para evitar criação concorrente nesta instâ
 Dez testes da API verificam também isolamento de campos/notas/tentativas e acesso
 entre cursos. Os dois testes de navegador percorrem cada curso completo em memória.
 As capturas do segundo ficam em `.impeccable/productivity-review/` (ignoradas no Git).
+
+## Terceiro minicurso: Encontre sua voz
+
+Curso em `/cursos/comunicacao-clara`, etapas `escuta`, `material`, `mensagem` e
+`avaliacao`. Roteiro salvo e imprimível: situação observável, intenção, público,
+ideia central, exemplo e pergunta de escuta. A segunda aula inclui ensaio e revisão
+salva; a plataforma não grava áudio nem envia mensagens. Quiz de cinco questões
+com aprovação a partir de 80%, explicações e tentativas registradas.
+
+Configuração em `communication.cjs`, páginas em `pages/comunicacao/`, API própria
+`/api/aprende/comunicacao-clara/*`. Reutiliza a sala de aula e o esquema existente,
+com campos, acessos, progresso e notas isolados dos outros cursos. A opção de
+Comunicação aparece na administração e o cartão da home inicia o minicurso.
+
+Curadoria verificada por oEmbed oficial e legendas públicas em 24/10/2026:
+
+- [O que comunico quando me comunico — Mara Behlau, TEDxGovernadorValadares](https://www.youtube.com/watch?v=_LsQyUaef0c), canal TEDx Talks, aproximadamente 19 minutos. Escolhido pela conexão entre preparo, contexto, destinatário e escuta; o material trabalha a verificação do entendimento e não exige memorizar percentuais ou alegações biomédicas do vídeo.
+- [Comunicação assertiva: 5 dicas práticas](https://www.youtube.com/watch?v=3_F1kj-sBBY), Clube da Fala | Comunicação e Oratória, aproximadamente 5 minutos. Escolhido pelo foco prático em clareza, organização e adequação da mensagem.
+
+Os exemplos, o roteiro e o quiz são originais, sem vínculo ou certificação dos
+criadores. O roteiro é uma atividade educacional, sem garantia de resolver conflitos.
+O vídeo institucional do Sebrae pesquisado não foi selecionado porque apresentava
+um evento, em vez de oferecer uma aula prática complementar.
+
+Onze testes da API validam os três cursos. Os três fluxos de navegador usam
+bancos em memória e cobrem matrícula, etapas, notas, retomada, impressão e quiz.
+O teste do terceiro verifica a URL dos dois players, sem alegar reprodução real.
+Capturas desktop/mobile e impressão em `.impeccable/communication-review/`, fora
+do Git. O teste de isolamento verifica que concluir ou revogar Comunicação não
+modifica os registros anteriores de Desenvolvimento pessoal ou Produtividade.
