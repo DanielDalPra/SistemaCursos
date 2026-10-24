@@ -13,8 +13,8 @@ As páginas são `/cursos/do-plano-a-acao/` seguido de:
 3. `clareza`: segundo vídeo e exercício de comunicação.
 4. `avaliacao`: cinco questões, aprovação com 80%, correção e novas tentativas.
 
-`/cursos` retoma automaticamente quando o aluno tem um único curso liberado;
-com dois cursos (ou nenhum), mostra a seleção. `/cursos/do-plano-a-acao` retoma
+`/cursos` sempre mostra Meus cursos, mesmo com apenas um curso liberado.
+Os botões de retomada abrem a próxima etapa. `/cursos/do-plano-a-acao` retoma
 a primeira etapa não concluída do primeiro curso; após concluir, abre a avaliação.
 Os vídeos carregam sob demanda e têm alternativa de abrir no YouTube.
 Conclusão de vídeo é declarada pelo aluno, sem alegação de monitoramento.
@@ -162,3 +162,30 @@ Na revisão de 24/10/2026, a ferramenta de acesso ao navegador do usuário falho
 antes de abrir sua sessão. Os fluxos autenticados foram verificados em ambiente
 isolado; reprodução real dos vídeos e administração na sessão existente ainda
 dependem de conferência no navegador.
+
+## Navegação do aluno e gestão de acessos
+
+A sidebar compartilhada aparece na área do aluno, nas aulas, no acesso pendente
+e na administração. No celular, o menu recolhe em um controle nativo, com Escape
+para fechar. Minha conta e Sair usam `/p` e `/logout` do Wiki.js.
+Gerenciar acessos só aparece após confirmação administrativa pela API; as rotas
+também verificam a permissão no servidor.
+
+Meus cursos filtra todos, para continuar (inclui ainda não iniciados), concluídos
+e acesso pendente. A retomada usa o curso incompleto atualizado mais recentemente,
+ou a ordem do catálogo quando não existe atividade. Um curso concluído continua
+disponível para revisão. Não há certificados nem inscrição automática.
+
+Na administração, busque uma conta ativa por nome ou e-mail (2 a 254 caracteres,
+até 15 resultados), selecione o aluno e confira o resumo antes de salvar.
+Também é possível informar o e-mail diretamente. Filtre os acessos liberados ou
+use Revisar revogação para preencher o formulário; só Salvar efetiva a mudança.
+Trocar o curso limpa a seleção anterior. A busca não revela anotações ou notas.
+O endpoint `GET <api-do-curso>/students?q=...` é exclusivo do administrador.
+
+`node tests/navigation-browser.cjs` cobre sidebar desktop/mobile, filtros,
+retomada, busca restrita, liberação, revisão e revogação, troca de curso e nova
+tentativa após falha de conexão. Usa contas fictícias e SQLite em memória.
+Capturas em `.impeccable/navigation-review/` são ignoradas pelo Git. As URLs
+da conta e saída são verificadas; as telas nativas continuam sob responsabilidade
+do Wiki.js.
