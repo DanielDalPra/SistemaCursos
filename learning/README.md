@@ -139,3 +139,26 @@ O teste do terceiro verifica a URL dos dois players, sem alegar reprodução rea
 Capturas desktop/mobile e impressão em `.impeccable/communication-review/`, fora
 do Git. O teste de isolamento verifica que concluir ou revogar Comunicação não
 modifica os registros anteriores de Desenvolvimento pessoal ou Produtividade.
+
+## Recuperação e impressão dos materiais
+
+`node tests/learning-resilience.cjs` executa sete cenários em navegador com banco
+em memória: edição durante salvamento, carregamento tardio, conclusão durante
+salvamento, impressão integral de respostas longas, falha de conexão, resposta
+incompleta com timeout e nova tentativa após aprovação. Não usa contas reais.
+
+Alterações feitas enquanto uma gravação está pendente continuam como rascunho.
+A conclusão aguarda salvar o texto mais recente; erros aparecem junto dos
+controles e permitem tentar novamente. O limite de 15 segundos cobre também a
+leitura do corpo da resposta. Os rascunhos permanecem na página aberta, sem
+promessa de recuperação após fechar o navegador.
+
+A impressão espelha o texto completo dos campos, evitando o corte de áreas de
+texto. A verificação automatizada usa mídia de impressão, sem validar paginação
+de um PDF. Uma tentativa de treino abaixo da nota mínima mantém uma aprovação
+anterior e explica isso no resultado.
+
+Na revisão de 24/10/2026, a ferramenta de acesso ao navegador do usuário falhou
+antes de abrir sua sessão. Os fluxos autenticados foram verificados em ambiente
+isolado; reprodução real dos vídeos e administração na sessão existente ainda
+dependem de conferência no navegador.

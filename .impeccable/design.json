@@ -77,14 +77,14 @@
       "name": "Course Outline and Progress"
     },
     {
-      "description": "Labelled account notes field with a square border and room to write.",
+      "description": "Labelled account notes field with a square border; edits during saving retain draft status, failures remain beside the controls, and full notes flow as text in print.",
       "css": ".ds-notes{font-family:Epilogue,Arial,sans-serif;color:var(--ink,#26251e);max-width:760px}.ds-notes label{display:block;font-size:15px;font-weight:500;margin:22px 0 9px}.ds-notes small{display:block;font-size:13px;font-weight:400;margin-top:4px}.ds-notes textarea{width:100%;display:block;border:1px solid #aaa99f;padding:14px 15px;background:#fffefa;border-radius:0;font-family:inherit;font-size:16px;line-height:1.6;caret-color:var(--accent,#2456d6);resize:vertical;min-height:95px;color:inherit}.ds-notes textarea::placeholder{color:#636259;opacity:1}.ds-notes textarea:focus-visible{outline:3px solid currentColor;outline-offset:6px}.ds-notes p{font-size:13px;margin-top:24px}",
       "html": "<div class=\"ds-notes\"><label for=\"ds-course-note\">Qual é a menor ação que vou realizar?<small>Descreva um comportamento, não uma qualidade abstrata.</small></label><textarea id=\"ds-course-note\" maxlength=\"2000\" placeholder=\"Vou gravar um áudio de um minuto explicando uma ideia.\"></textarea><p>Há alterações não salvas.</p></div>",
       "kind": "input",
       "name": "Course Notes Field"
     },
     {
-      "description": "Native required radio choices with checked and keyboard-focus treatments.",
+      "description": "Native required radio choices with checked and keyboard-focus treatments; practice results explain when a previous approval remains recorded.",
       "css": ".ds-quiz{font-family:Epilogue,Arial,sans-serif;border:0;padding:0;margin:0 0 35px;min-width:0;color:var(--ink,#26251e)}.ds-quiz legend{font-size:18px;font-weight:500;margin-bottom:15px;line-height:1.55}.ds-quiz-option{display:flex;gap:13px;align-items:start;background:var(--lesson-panel,#e9e8e3);padding:15px 18px;margin-bottom:9px;cursor:pointer;font-size:15px;line-height:1.6}.ds-quiz-option input{width:18px;height:18px;margin:3px 0 0;flex-shrink:0;accent-color:var(--accent,#2456d6)}.ds-quiz-option:hover{background:#dddcd5}.ds-quiz-option:has(input:checked){background:#dbe3f7}.ds-quiz-option:has(input:focus-visible){outline:2px solid var(--accent,#2456d6);outline-offset:2px}",
       "html": "<fieldset class=\"ds-quiz\"><legend>Qual ação ajuda a transformar intenção em prática?</legend><label class=\"ds-quiz-option\"><input type=\"radio\" name=\"ds-practice\" value=\"0\" required><span>Escolher uma tentativa pequena e observar o resultado.</span></label><label class=\"ds-quiz-option\"><input type=\"radio\" name=\"ds-practice\" value=\"1\" required><span>Esperar até se sentir completamente pronto.</span></label></fieldset>",
       "kind": "custom",
