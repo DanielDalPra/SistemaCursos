@@ -5,6 +5,10 @@
   const stepId = document.body.dataset.step;
   let state;
   let dirty = false;
+  let editVersion = 0;
+  let savingNotes = null;
+  let completing = false;
+  const editedFields = new Set();
   const status = document.querySelector('#status');
   const button = document.querySelector('#complete');
   const notesForm = document.querySelector('#notes-form');
@@ -41,31 +45,55 @@
     }
   }
   async function saveNotes() {
-    if (!notesForm) return;
+    if (!notesForm) return true;
+    if (!state) throw new Error('Aguarde o carregamento antes de salvar.');
+    if (savingNotes) return savingNotes;
     const save = notesForm.querySelector('[type=submit]');
+    const submittedVersion = editVersion;
+    const notes = Object.fromEntries(new FormData(notesForm));
     save.disabled = true;
-    try {
-      const notes = Object.fromEntries(new FormData(notesForm));
+    savingNotes = (async () => {
       const progress = await api('notes',{notes});
-      state.progress = progress; dirty = false;
-      document.querySelector('#notes-state').textContent = 'Anotações salvas na sua conta.';
-      return true;
-    } finally { save.disabled = false; }
+      state.progress = progress;
+      dirty = editVersion !== submittedVersion;
+      document.querySelector('#notes-state').textContent = dirty ? 'Há alterações não salvas.' : 'Anotações salvas na sua conta.';
+      return !dirty;
+    })();
+    try { return await savingNotes; }
+    finally { savingNotes = null; save.disabled = completing; }
   }
   if (notesForm) {
-    notesForm.addEventListener('input', () => { dirty = true; document.querySelector('#notes-state').textContent = 'Há alterações não salvas.'; });
-    notesForm.addEventListener('submit', async event => { event.preventDefault(); message(''); try { await saveNotes(); message('Anotações salvas. Você pode continuar quando quiser.','success'); } catch(error) { message(error.message,'error'); } });
+    notesForm.querySelector('[type=submit]').disabled = true;
+    notesForm.addEventListener('input', event => { editVersion++; editedFields.add(event.target.name); dirty = true; document.querySelector('#notes-state').textContent = 'Há alterações não salvas.'; });
+    notesForm.addEventListener('submit', async event => {
+      event.preventDefault(); message('');
+      try {
+        const saved = await saveNotes();
+        message(saved ? 'Anotações salvas. Você pode continuar quando quiser.' : 'A versão enviada foi salva, mas você fez novas alterações. Salve novamente para guardar o texto mais recente.', saved ? 'success' : '');
+      } catch(error) { message(error.message,'error'); }
+    });
   }
   addEventListener('beforeunload', event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } });
   button?.addEventListener('click', async () => {
+    if (completing) return;
+    completing = true;
+    const fields = notesForm ? [...notesForm.querySelectorAll('input, textarea')] : [];
+    fields.forEach(field => { field.readOnly = true; });
+    if (notesForm) notesForm.querySelector('[type=submit]').disabled = true;
     button.disabled = true; message('Salvando seu progresso…');
     try {
+      if (savingNotes) await savingNotes;
       if (dirty) await saveNotes();
       state.progress = await api('complete',{step:stepId});
       renderProgress();
       const index = state.course.steps.findIndex(step=>step.id===stepId);
       location.href = root + state.course.steps[index+1].id;
     } catch(error) { message(error.message,'error'); renderProgress(); }
+    finally {
+      completing = false;
+      fields.forEach(field => { field.readOnly = false; });
+      if (notesForm) notesForm.querySelector('[type=submit]').disabled = false;
+    }
   });
   document.querySelector('#print-material')?.addEventListener('click', () => window.print());
   document.querySelector('#load-video')?.addEventListener('click', () => {
@@ -107,7 +135,10 @@
     try {
       state = await api('state'); renderProgress();
       if (!state.enrolled) throw new Error('Seu acesso ainda não foi liberado. Fale com a responsável pelo curso.');
-      if (notesForm) Object.entries(state.progress.notes).forEach(([key,value])=>{if(notesForm.elements.namedItem(key)) notesForm.elements.namedItem(key).value=value;});
+      if (notesForm) {
+        Object.entries(state.progress.notes).forEach(([key,value])=>{if(notesForm.elements.namedItem(key) && !editedFields.has(key)) notesForm.elements.namedItem(key).value=value;});
+        notesForm.querySelector('[type=submit]').disabled = false;
+      }
       if (stepId === 'avaliacao') await loadQuiz();
       document.querySelector('#loading').hidden = true;
     } catch(error) { document.querySelector('#loading').hidden=true; message(error.message,'error'); const retry=document.querySelector('#retry-load'); retry.hidden=false; retry.onclick=()=>location.reload(); }

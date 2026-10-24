@@ -1,0 +1,44 @@
+const assert=require('node:assert/strict');
+const {createRequire}=require('node:module');
+const path=require('node:path');
+const req=createRequire(path.resolve('runtime/package.json'));
+const express=req('express');const knex=req('knex');
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'C:/Users/danie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const createRouter=require('../learning/server.cjs');
+(async()=>{
+ const db=knex({client:'sqlite3',connection:{filename:':memory:'},useNullAsDefault:true,pool:{min:1,max:1}});
+ await db.schema.createTable('users',t=>{t.integer('id').primary();t.string('name');t.boolean('isActive');t.boolean('isSystem');});
+ await db('users').insert({id:1,name:'Revisão isolada',isActive:true,isSystem:false});
+ const app=express();app.use(express.json(),(request,response,next)=>{request.user={id:1};next();});app.use('/cursos-home',express.static(path.resolve('home')));
+ app.use(createRouter({models:{knex:db,users:{query:()=>({findById:id=>db('users').where({id}).first()})}},config:{sessionSecret:'isolated-resilience-test'},auth:{checkAccess:()=>true}},express));
+ const server=app.listen(0,'127.0.0.1');await new Promise(resolve=>server.on('listening',resolve));const base='http://127.0.0.1:'+server.address().port;
+ const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH||'C:/Users/danie/AppData/Local/ms-playwright/chromium-1208/chrome-win64/chrome.exe'});
+ const page=await browser.newPage({viewport:{width:1440,height:1000},reducedMotion:'reduce'});page.setDefaultTimeout(8000);
+ try{
+  await page.goto(base+'/cursos/do-plano-a-acao/material');await page.locator('#loading').waitFor({state:'hidden'});
+  let release;const gate=new Promise(resolve=>release=resolve);let started;const saved=new Promise(resolve=>started=resolve);
+  await page.route('**/api/aprende/notes',async route=>{const response=await route.fetch();started();await gate;await route.fulfill({response});});
+  await page.locator('#acao').fill('Primeira versão');await page.getByRole('button',{name:'Salvar meu plano'}).click();await saved;
+  await page.locator('#acao').fill('Versão mais recente');release();await page.waitForFunction(()=>!document.querySelector('#notes-form button').disabled);
+  assert.match(await page.locator('#notes-state').textContent(),/não salvas/,'Typing while a save is pending must remain marked unsaved');
+  await page.unroute('**/api/aprende/notes');await page.getByRole('button',{name:'Salvar meu plano'}).click();await page.waitForFunction(()=>document.querySelector('#notes-state').textContent==='Anotações salvas na sua conta.');
+  assert.equal(JSON.parse((await db('aprendeProgress').where({userId:1,courseId:'do-plano-a-acao'}).first()).notes).acao,'Versão mais recente');
+  console.log('PASS: edits made during an in-flight save remain dirty and can be persisted without data loss.');
+  let releaseState;const stateGate=new Promise(resolve=>releaseState=resolve);let stateStarted;const stateWaiting=new Promise(resolve=>stateStarted=resolve);
+  await page.route('**/api/aprende/state',async route=>{const response=await route.fetch();stateStarted();await stateGate;await route.fulfill({response});});
+  await page.reload();await stateWaiting;await page.locator('#acao').fill('Digitado antes de carregar');releaseState();
+  await page.locator('#loading').waitFor({state:'hidden'});assert.equal(await page.locator('#acao').inputValue(),'Digitado antes de carregar');
+  await page.unroute('**/api/aprende/state');await page.getByRole('button',{name:'Salvar meu plano'}).click();await page.waitForFunction(()=>document.querySelector('#notes-state').textContent==='Anotações salvas na sua conta.');
+  console.log('PASS: late hydration does not overwrite a field the learner has already edited.');
+  await db('aprendeProgress').where({userId:1,courseId:'do-plano-a-acao'}).update({completed:'["confianca"]'});
+  await page.reload();await page.waitForFunction(()=>!document.querySelector('#complete').disabled);
+  let releaseNext;const nextGate=new Promise(resolve=>releaseNext=resolve);let nextStarted;const nextWaiting=new Promise(resolve=>nextStarted=resolve);
+  let intercepted=false;
+  await page.route('**/api/aprende/notes',async route=>{const response=await route.fetch();if(!intercepted){intercepted=true;nextStarted();await nextGate;}await route.fulfill({response});});
+  await page.locator('#acao').fill('Rascunho anterior');await page.getByRole('button',{name:'Salvar meu plano'}).click();await nextWaiting;
+  await page.locator('#acao').fill('Texto final antes de avançar');await page.getByRole('button',{name:'Concluir e continuar'}).click();
+  assert.equal(await page.locator('#acao').evaluate(field=>field.readOnly),true);releaseNext();await page.waitForURL('**/clareza');
+  assert.equal(JSON.parse((await db('aprendeProgress').where({userId:1,courseId:'do-plano-a-acao'}).first()).notes).acao,'Texto final antes de avançar');
+  console.log('PASS: completing while a save is pending persists the newest edits before navigation.');
+ }finally{await browser.close();await new Promise(resolve=>server.close(resolve));await db.destroy();}
+})().catch(error=>{console.error(error);process.exitCode=1;});
