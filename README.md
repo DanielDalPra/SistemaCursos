@@ -91,3 +91,10 @@ disponíveis nesta máquina). Capturas ficam em `.impeccable/review/`.
 O inspetor visual próprio do Taste não conseguiu completar a conexão CDP;
 a verificação substituta mede transbordamento, imagens, fontes, títulos e
 interações com Playwright. O lint do Taste passou sem findings.
+
+## Primeiro minicurso
+
+Do plano à ação tem duas aulas em vídeo, material com plano de aplicação e quiz.
+Acesso em `/cursos`; liberação manual em `/cursos/administracao`. Login, progresso,
+anotações e notas são associados à conta do Wiki.js. Consulte
+[learning/README.md](learning/README.md) para uso, administração, testes e limites.
