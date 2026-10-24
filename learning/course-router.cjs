@@ -76,9 +76,10 @@ module.exports = function createCourseRouter(WIKI, express, course = require('./
     const scope = { userId: req.user.id, courseId: item.id };
     const enrolled = isAdmin(req) || !!await db('aprendeEnrollments').where(scope).first();
     const state = enrolled ? parse(await db('aprendeProgress').where(scope).first()) : { completed: [] };
-    return { id: item.id, title: item.title, enrolled, completed: state.completed.length, total: item.steps.length };
+    const next = item.steps.find(step => !state.completed.includes(step.id)) || item.steps[item.steps.length - 1];
+    return { id: item.id, title: item.title, enrolled, completed: state.completed.length, total: item.steps.length, updatedAt: state.updatedAt || null, resumeUrl: enrolled ? '/cursos/' + item.id + '/' + next.id : null };
   }));
-  if (course.id === 'do-plano-a-acao') router.get('/api/aprende/catalog', wrap(async (req, res) => res.json({ courses: await studentCourses(req), admin: isAdmin(req) })));
+  if (course.id === 'do-plano-a-acao') router.get('/api/aprende/catalog', wrap(async (req, res) => res.json({ courses: await studentCourses(req), admin: isAdmin(req), user: { name: req.aprendeUser.name } })));
   const requireAccess = async (req, res) => {
     if (await hasAccess(req)) return true;
     res.status(403).json({ error: 'Seu acesso ainda não foi liberado. Fale com a responsável pelo curso.', code: 'ENROLLMENT_REQUIRED' }); return false;
@@ -144,6 +145,17 @@ module.exports = function createCourseRouter(WIKI, express, course = require('./
     if (!isAdmin(req)) return res.status(403).json({ error: 'Apenas administradores podem gerenciar acessos.' });
     res.json(await db('aprendeEnrollments as e').join('users as u', 'e.userId', 'u.id').where('e.courseId', course.id).select('u.id', 'u.name', 'u.email', 'e.grantedAt'));
   }));
+  router.get(apiRoot + '/students', wrap(async (req, res) => {
+    if (!isAdmin(req)) return res.status(403).json({ error: 'Apenas administradores podem buscar alunos.' });
+    const query = typeof req.query.q === 'string' ? req.query.q.trim().toLowerCase() : '';
+    if (query.length < 2 || query.length > 254) return res.status(400).json({ error: 'Digite entre 2 e 254 caracteres para buscar.' });
+    const pattern = '%' + query.replace(/[\\%_]/g, '\\$&') + '%';
+    const users = await db('users').where({ isSystem: false, isActive: true }).where(function () {
+      this.whereRaw("lower(name) like ? escape '\\'", [pattern]).orWhereRaw("lower(email) like ? escape '\\'", [pattern]);
+    }).orderBy('name').limit(15).select('id', 'name', 'email');
+    const enrolled = await db('aprendeEnrollments').where('courseId', course.id).whereIn('userId', users.map(user => user.id)).pluck('userId');
+    res.json(users.map(user => ({ ...user, enrolled: enrolled.includes(user.id) })));
+  }));
   router.post(apiRoot + '/enrollments', wrap(async (req, res) => {
     if (!isAdmin(req)) return res.status(403).json({ error: 'Apenas administradores podem gerenciar acessos.' });
     if (typeof req.body.email !== 'string' || req.body.email.length > 254 || !['grant', 'revoke'].includes(req.body.action)) return res.status(400).json({ error: 'Informe um e-mail e uma ação válidos.' });
@@ -156,13 +168,6 @@ module.exports = function createCourseRouter(WIKI, express, course = require('./
   }));
   router.get(course.id === 'do-plano-a-acao' ? ['/cursos', root] : [root], wrap(async (req, res) => {
     if (req.path === '/cursos' && catalog.length > 1) {
-      const enrolled = (await studentCourses(req)).filter(item => item.enrolled);
-      if (enrolled.length === 1) {
-        const item = catalog.find(item => item.id === enrolled[0].id);
-        const state = parse(await db('aprendeProgress').where({ userId: req.user.id, courseId: item.id }).first());
-        const next = item.steps.find(step => !state.completed.includes(step.id)) || item.steps[item.steps.length - 1];
-        return res.redirect('/cursos/' + item.id + '/' + next.id);
-      }
       return res.sendFile(path.join(__dirname, 'pages', 'meus-cursos.html'));
     }
     const state = await hasAccess(req) ? await progress(req) : { completed: [] };

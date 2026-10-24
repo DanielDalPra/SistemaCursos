@@ -66,7 +66,8 @@ test('notes are validated and stay isolated per authenticated user', async () =>
   assert.equal((await request('/api/aprende/notes',{user:3,token:student.csrf,method:'POST',body:{notes:{acao:'a'.repeat(2001)}}})).status,400);
   assert.equal((await (await request('/api/aprende/state',{user:3})).json()).progress.notes.acao,'Ler duas páginas');
   assert.deepEqual((await (await request('/api/aprende/state')).json()).progress.notes,{});
-  const resume = await request('/cursos',{user:3});
+  assert.equal((await request('/cursos',{user:3})).status,200);
+  const resume = await request('/cursos/do-plano-a-acao',{user:3});
   assert.equal(resume.headers.get('location'),'/cursos/do-plano-a-acao/material');
 });
 test('server grades attempts, rejects incomplete answers and persists pass', async () => {
@@ -80,7 +81,7 @@ test('server grades attempts, rejects incomplete answers and persists pass', asy
   const passed = await (await request('/api/aprende/quiz',{user:3,token:student.csrf,method:'POST',body:{answers:Object.fromEntries(course.questions.map(q=>[q.id,q.answer]))}})).json();
   assert.equal(passed.score,100); assert.equal(passed.passed,true); assert.equal(passed.progress.completed.length,4);
   assert.equal((await db('aprendeAttempts').where({userId:3})).length,2);
-  assert.equal((await request('/cursos',{user:3})).headers.get('location'),'/cursos/do-plano-a-acao/avaliacao');
+  assert.equal((await request('/cursos/do-plano-a-acao',{user:3})).headers.get('location'),'/cursos/do-plano-a-acao/avaliacao');
 });
 test('quiz submission limit is enforced for the authenticated student', async () => {
   const student=await (await request('/api/aprende/state',{user:3})).json();
