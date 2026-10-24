@@ -111,6 +111,29 @@ test('a second course requires its own enrollment and isolates notes, completion
   assert.equal((await (await request(api+'state',{user:3})).json()).enrolled,false);
   assert.equal((await (await request('/api/aprende/state',{user:3})).json()).enrolled,true);
 });
+test('third-course enrollment and assessment remain isolated from the first two courses', async () => {
+  const third = require('../learning/communication.cjs');
+  const api = '/api/aprende/comunicacao-clara/';
+  const before = await (await request('/api/aprende/state',{user:3})).json();
+  const secondBefore = await (await request('/api/aprende/rotina-possivel/state',{user:3})).json();
+  assert.equal((await (await request(api+'state',{user:3})).json()).enrolled,false);
+  assert.equal((await request(api+'quiz',{user:3})).status,403);
+  await request(api+'enrollments',{method:'POST',body:{email:'aluno@example.test',action:'grant'}});
+  const student = await (await request(api+'state',{user:3})).json();
+  assert.equal(student.course.id,third.id);assert.deepEqual(student.progress.notes,{});assert.deepEqual(student.progress.completed,[]);
+  assert.equal((await request(api+'notes',{user:3,token:student.csrf,method:'POST',body:{notes:{proximaAcao:'field from another course'}}})).status,400);
+  await request(api+'notes',{user:3,token:student.csrf,method:'POST',body:{notes:{ideiaCentral:'Confirmar o prazo'},courseId:'do-plano-a-acao'}});
+  for(const step of third.steps.slice(0,3))await request(api+'complete',{user:3,token:student.csrf,method:'POST',body:{step:step.id}});
+  const result=await (await request(api+'quiz',{user:3,token:student.csrf,method:'POST',body:{answers:Object.fromEntries(third.questions.map(q=>[q.id,q.answer]))}})).json();
+  assert.equal(result.score,100);assert.equal(result.progress.completed.length,4);assert.equal(result.progress.notes.ideiaCentral,'Confirmar o prazo');
+  const after=await (await request('/api/aprende/state',{user:3})).json();assert.deepEqual(after.progress,before.progress);
+  const secondAfter=await (await request('/api/aprende/rotina-possivel/state',{user:3})).json();assert.deepEqual(secondAfter.progress,secondBefore.progress);
+  assert.equal((await db('aprendeAttempts').where({userId:3,courseId:third.id})).length,1);
+  const list=await (await request('/api/aprende/catalog',{user:3})).json();assert.equal(list.courses.length,3);
+  await request(api+'enrollments',{method:'POST',body:{email:'aluno@example.test',action:'revoke'}});
+  assert.equal((await (await request('/api/aprende/state',{user:3})).json()).enrolled,true);
+  assert.equal((await (await request(api+'state',{user:3})).json()).enrolled,false);
+});
 test('revoking blocks later requests and inactive accounts are denied', async () => {
   await request('/api/aprende/enrollments',{method:'POST',body:{email:'aluno@example.test',action:'revoke'}});
   assert.equal((await request('/api/aprende/quiz',{user:3})).status,403);
