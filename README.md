@@ -34,6 +34,13 @@ Para iniciar novamente, execute no PowerShell:
 
 O processo fica no terminal. Ctrl+C encerra o servidor.
 O banco persistente fica em runtime/data/cursos.sqlite.
+
+Para testar pelo celular na mesma rede, inicie com
+`./iniciar.ps1 -EnderecoRedeLocal SEU_IPV4_PRIVADO` e abra
+`http://SEU_IPV4_PRIVADO:3000/`. O servidor passa a escutar somente nesse IPv4;
+use o mesmo endereço no computador. O IP pode mudar quando a rede reconectar.
+Se o firewall bloquear, permita TCP 3000 apenas na interface local e na sub-rede
+dos dispositivos de teste. Não é necessário abrir portas no roteador.
 A pasta runtime contém dados locais e não é versionada.
 
 ## Código-fonte
