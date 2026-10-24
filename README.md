@@ -98,3 +98,10 @@ Do plano à ação tem duas aulas em vídeo, material com plano de aplicação e
 Acesso em `/cursos`; liberação manual em `/cursos/administracao`. Login, progresso,
 anotações e notas são associados à conta do Wiki.js. Consulte
 [learning/README.md](learning/README.md) para uso, administração, testes e limites.
+
+## Segundo minicurso
+
+Tempo para o que importa: `/cursos/rotina-possivel`. Vídeos selecionados de Luana
+Carolina e Thais Godinho, plano semanal salvo/imprimível, revisão e quiz próprio.
+Administração permite escolher o curso; acessos, anotações e notas são independentes.
+O primeiro minicurso foi preservado e validado novamente por regressão.
