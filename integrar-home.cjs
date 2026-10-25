@@ -11,12 +11,15 @@ if (source.includes(marker)) {
   const endMarker = '// APRENDE_HOME_END';
   const end = source.indexOf(endMarker, start);
   const anchor = source.indexOf('const tmplCreateRegex', start);
-  if (end >= 0) source = source.slice(0, start) + route.trimStart() + source.slice(end + endMarker.length);
-  else if (anchor >= 0) source = source.slice(0, start) + route.trimStart() + '\n' + source.slice(anchor);
+  if (end >= 0)
+    source = source.slice(0, start) + route.trimStart() + source.slice(end + endMarker.length);
+  else if (anchor >= 0)
+    source = source.slice(0, start) + route.trimStart() + '\n' + source.slice(anchor);
   else throw new Error('Não foi possível localizar o fim da integração anterior.');
 } else {
   const anchor = 'const tmplCreateRegex';
-  if (!source.includes(anchor)) throw new Error('Controller mudou: revise a integração antes de aplicar.');
+  if (!source.includes(anchor))
+    throw new Error('Controller mudou: revise a integração antes de aplicar.');
   source = source.replace(anchor, route + '\n' + anchor);
 }
 fs.writeFileSync(controller, source);

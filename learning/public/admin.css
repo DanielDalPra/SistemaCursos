@@ -1,23 +1,134 @@
-.admin-section{margin-top:42px;padding-top:28px;border-top:1px solid var(--lesson-line)}
-.admin-section h2{margin-top:0}
-.admin-form select,.admin-filter{width:100%;border:1px solid #aaa99f;padding:14px 15px;background:#fffefa;color:inherit;font:inherit;border-radius:0;min-height:50px}
-.access-page .admin-help{font-size:13px;line-height:1.7;margin:12px 0 18px;max-width:70ch}
-.admin-help a{text-decoration:underline}
-.admin-search-row{display:flex;align-items:stretch;gap:10px}
-.admin-search-row input{min-width:0;flex:1}
-.admin-search-row button{flex-shrink:0}
-.access-actions{border:0;padding:24px 0 0;margin:0}
-.access-actions legend{padding-top:24px;font-size:14px}
-.access-actions label{display:flex;gap:10px;align-items:start;font-size:14px;line-height:1.6;margin-top:12px}
-.access-actions input{display:inline;width:18px;height:18px;min-width:18px;margin-top:2px;accent-color:var(--accent)}
-.account-results{list-style:none;padding:0;max-width:700px}
-.account-results li{padding:18px 0;border-bottom:1px solid var(--lesson-line);display:flex;gap:18px;justify-content:space-between;align-items:center;overflow-wrap:anywhere}
-.account-results small{display:block;font-size:13px;line-height:1.7}
-.account-results div{min-width:0}
-.account-results button{flex-shrink:0}
-.admin-filter-label{display:block;font-size:14px;margin:20px 0 10px}
-.admin-filter{max-width:650px;font-size:16px}
-.enrollment-list li{display:flex;justify-content:space-between;align-items:center;gap:20px}
-.enrollment-list li>div{min-width:0}
-.enrollment-list small{font-size:12px;line-height:1.7;margin-top:5px}
-@media(max-width:760px){.admin-search-row{flex-direction:column}.account-results li,.enrollment-list li{align-items:start;flex-direction:column;gap:15px}.account-results button,.enrollment-list button{align-self:start}.admin-section{margin-top:32px}.admin-form{margin-top:24px}}
+.admin-section {
+  margin-top: 42px;
+  padding-top: 28px;
+  border-top: 1px solid var(--lesson-line);
+}
+.admin-section h2 {
+  margin-top: 0;
+}
+.admin-form select,
+.admin-filter {
+  width: 100%;
+  border: 1px solid #aaa99f;
+  padding: 14px 15px;
+  background: #fffefa;
+  color: inherit;
+  font: inherit;
+  border-radius: 0;
+  min-height: 50px;
+}
+.access-page .admin-help {
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 12px 0 18px;
+  max-width: 70ch;
+}
+.admin-help a {
+  text-decoration: underline;
+}
+.admin-search-row {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+}
+.admin-search-row input {
+  min-width: 0;
+  flex: 1;
+}
+.admin-search-row button {
+  flex-shrink: 0;
+}
+.access-actions {
+  border: 0;
+  padding: 24px 0 0;
+  margin: 0;
+}
+.access-actions legend {
+  padding-top: 24px;
+  font-size: 14px;
+}
+.access-actions label {
+  display: flex;
+  gap: 10px;
+  align-items: start;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-top: 12px;
+}
+.access-actions input {
+  display: inline;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  margin-top: 2px;
+  accent-color: var(--accent);
+}
+.account-results {
+  list-style: none;
+  padding: 0;
+  max-width: 700px;
+}
+.account-results li {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--lesson-line);
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  align-items: center;
+  overflow-wrap: anywhere;
+}
+.account-results small {
+  display: block;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.account-results div {
+  min-width: 0;
+}
+.account-results button {
+  flex-shrink: 0;
+}
+.admin-filter-label {
+  display: block;
+  font-size: 14px;
+  margin: 20px 0 10px;
+}
+.admin-filter {
+  max-width: 650px;
+  font-size: 16px;
+}
+.enrollment-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+.enrollment-list li > div {
+  min-width: 0;
+}
+.enrollment-list small {
+  font-size: 12px;
+  line-height: 1.7;
+  margin-top: 5px;
+}
+@media (max-width: 760px) {
+  .admin-search-row {
+    flex-direction: column;
+  }
+  .account-results li,
+  .enrollment-list li {
+    align-items: start;
+    flex-direction: column;
+    gap: 15px;
+  }
+  .account-results button,
+  .enrollment-list button {
+    align-self: start;
+  }
+  .admin-section {
+    margin-top: 32px;
+  }
+  .admin-form {
+    margin-top: 24px;
+  }
+}
